@@ -6,7 +6,7 @@
 # point map.
 
 import argparse, numpy, csv
-import util.util, util.neighborhoods
+import util.util, util.neighborhoods, util.census
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,7 +17,8 @@ if __name__ == '__main__':
     nghds = util.neighborhoods.load_nghds('geodata/Pittsburgh_Neighborhoods.json')
     munis = util.neighborhoods.load_allegheny_munis('geodata/Allegheny_Munis.json')
 
-    writer = csv.DictWriter(open(args.outfile, 'w'), ['lat', 'lon', 'nghd'])
+    writer = csv.DictWriter(open(args.outfile, 'w'), ['lat', 'lon', 'nghd',
+        'tract', 'block_group', 'block'])
     writer.writeheader()
 
     counter = 0
@@ -26,7 +27,11 @@ if __name__ == '__main__':
             lat = round(lat, 3)
             lon = round(lon, 3)
             nghd = util.neighborhoods.get_neighborhood_or_muni_name(nghds, munis, lon, lat)
-            writer.writerow({'lat': lat, 'lon': lon, 'nghd': nghd})
+            tract = util.census.get_tract_name(lat, lon)
+            group = util.census.get_group_ID(lat, lon)
+            block = util.census.get_block_name(lat, lon)
+            writer.writerow({'lat': lat, 'lon': lon, 'nghd': nghd,
+                'tract': tract, 'block_group': group, 'block': block})
             counter += 1
             if counter % 1000 == 0:
                 print counter
