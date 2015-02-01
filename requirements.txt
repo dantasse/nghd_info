@@ -1,0 +1,4 @@
+geojson==1.0.9
+numpy==1.9.1
+pytz==2014.10
+Shapely==1.5.5
