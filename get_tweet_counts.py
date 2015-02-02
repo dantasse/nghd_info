@@ -45,7 +45,7 @@ def run_all():
     counter = 0
     for tweet in db.tweet_pgh.find():
         counter += 1
-        if (counter % 100) == 0:
+        if (counter % 1000) == 0:
             print str(counter) + ' tweets processed'
         coords = tweet['coordinates']['coordinates']
         bin = util.util.round_latlon(coords[1], coords[0])
