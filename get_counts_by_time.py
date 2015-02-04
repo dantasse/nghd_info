@@ -29,11 +29,18 @@ def run_all():
     bin_hr_counts = Counter() # (lat, lon, hr) -> count
     nghd_hr_counts = Counter() # (nghd, hr) -> count
 
+    ctr = 0
     for tweet in db.tweet_pgh.find():
+        ctr += 1
+        if ctr % 1000 == 0:
+            print '%d tweets processed' % ctr
         lat = tweet['coordinates']['coordinates'][1]
         lon = tweet['coordinates']['coordinates'][0]
         (lat, lon) = (round(float(lat), 3), round(float(lon), 3))
-        nghd = point_nghd_map[(lat, lon)]
+        if (lat, lon) in point_nghd_map:
+            nghd = point_nghd_map[(lat, lon)]
+        else:
+            nghd = 'Outside Pittsburgh'
 
         hr = util.util.get_tweet_hour(tweet)
         bin_hr_counts[(lat, lon, hr)] += 1
