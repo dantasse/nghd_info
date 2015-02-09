@@ -6,13 +6,17 @@
 # suburbs, 20-100 is this "in between" where people are strangers but there
 # is no vitality, and 100+ tends to work out nicely.
 
-import csv, argparse
+import csv, argparse, ujson
+from collections import defaultdict
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--area_file', default='demographics/population_density.csv')
     parser.add_argument('--housing_file', default='demographics/housing.csv')
     parser.add_argument('--zoning_file', default='demographics/zoning.csv')
+    parser.add_argument('--tract_block_group_file', default='demographics/tract_block_group.csv')
+    parser.add_argument('--blocks_housing_file', default='demographics/blocks_housing.csv')
+    parser.add_argument('--blocks_file', default='geodata/Pittsburgh_Blocks.json')
     parser.add_argument('--outfile', default='outputs/nghds_dwelling_densities.csv')
     args = parser.parse_args()
 
@@ -40,6 +44,42 @@ if __name__ == '__main__':
     writer = csv.DictWriter(open(args.outfile, 'w'), ['nghd', 'units_per_acre_residential'])
     writer.writeheader()
 
+    blockgroup_nghd = {} # int block group number -> string neighborhood name
+    blockgroup_file = open(args.tract_block_group_file)
+    for line in csv.DictReader(blockgroup_file):
+        nghd = line['HOOD']
+        census_code = int(line['CENSUS CODE'])
+        blockgroup_nghd[census_code] = nghd
+    blockgroup_file.close()
+    # print blockgroup_nghd
+
+    blocks_json = ujson.load(open(args.blocks_file))
+    block_acres = {} # int block number -> float number of acres
+    for feature in blocks_json['features']:
+        block_props = feature['properties']
+        block_acres[int(block_props['GEOID10'])] = float(block_props['Acres'])
+
+    nghd_resid_acres = defaultdict(float) # string nghd -> num residential acres
+    nghd_dwellings = defaultdict(int) # string nghd -> num dwellings
+    for line in csv.DictReader(open(args.blocks_housing_file)):
+        dwellings = int(line['D001'])
+        if dwellings == 0:
+            # Ignore these blocks b/c probably not residential.
+            continue
+        block = line['GEO.id2']
+        block_id = int(line['GEO.id2'])
+        blockgroup = int(block[0:-3])
+        if blockgroup not in blockgroup_nghd:
+            # print str(blockgroup) + " not in Pittsburgh"
+            # Ignore all the non-pgh ones.
+            continue
+
+        nghd = blockgroup_nghd[blockgroup]
+        acres = block_acres[block_id]
+        nghd_dwellings[nghd] += dwellings
+        nghd_resid_acres[nghd] += acres
+        
+
     for line in csv.DictReader(open(args.area_file)):
         nghd = line['Neighborhood']
         acres = float(line['Land Area (acres)'].replace(',',''))
@@ -48,6 +88,11 @@ if __name__ == '__main__':
 
         density = housing_numbers[nghd] / (acres * pct_residential[nghd])
         pct_resid = pct_residential[nghd]
-        # print '%s\tacres: %d\tpct_resid: %.02f\tdensity: %.02f' % (nghd, acres, pct_resid, density)
+        # print '%s\tacres: %d\tpct_res: %.02f\tdensity: %.02f' % (nghd, acres, pct_resid, density)
+
+        density_from_blocks = nghd_dwellings[nghd] * 1.0 / (nghd_resid_acres[nghd] + .001)
+        # print '%.02f\t%.02f\t%s' % (density, density_from_blocks, nghd)
+        # Turns out density from blocks is even lower than from nghd-level, so
+        # let's continue to use the nghd-level stats.
         writer.writerow({'nghd': nghd, 'units_per_acre_residential': '%.02f' % density})
 
