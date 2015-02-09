@@ -13,6 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('--area_file', default='demographics/population_density.csv')
     parser.add_argument('--housing_file', default='demographics/housing.csv')
     parser.add_argument('--zoning_file', default='demographics/zoning.csv')
+    parser.add_argument('--outfile', default='outputs/nghds_dwelling_densities.csv')
     args = parser.parse_args()
 
     housing_numbers = {} # string neighborhood name -> int number of dwellings.
@@ -28,12 +29,16 @@ if __name__ == '__main__':
         pct_mixed_ind = float(line['Mixed Use / Industrial'].replace('%','')) * .01
         pct_special = float(line['Special Land Use'].replace('%','')) * .01
 
-        # I guess mixed use/commercial counts as half-residential?
-        # mixed/industrial is .25, and special is .5? These are all wild out of
+        # I guess mixed use/commercial counts as say 0.75 residential? (because
+        # what's the use mixed with? gotta be residential, right?)
+        # Mixed/industrial and Special are both .25? These are all wild out of
         # a hat numbers, but we have to somehow account for the fact that, say,
         # 90% of downtown is "special", etc.
         pct_residential[line['Neighborhood']] = pct_resid_only + \
-            0.5 * pct_mixed_comm + 0.25 * pct_mixed_ind + 0.5 * pct_special
+            0.75 * pct_mixed_comm + 0.25 * pct_mixed_ind + 0.25 * pct_special
+
+    writer = csv.DictWriter(open(args.outfile, 'w'), ['nghd', 'units_per_acre_residential'])
+    writer.writeheader()
 
     for line in csv.DictReader(open(args.area_file)):
         nghd = line['Neighborhood']
@@ -43,4 +48,6 @@ if __name__ == '__main__':
 
         density = housing_numbers[nghd] / (acres * pct_residential[nghd])
         pct_resid = pct_residential[nghd]
-        print '%s\tacres: %d\tpct_resid: %.02f\tdensity: %.02f' % (nghd, acres, pct_resid, density)
+        # print '%s\tacres: %d\tpct_resid: %.02f\tdensity: %.02f' % (nghd, acres, pct_resid, density)
+        writer.writerow({'nghd': nghd, 'units_per_acre_residential': '%.02f' % density})
+

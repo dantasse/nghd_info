@@ -10,5 +10,8 @@ method that combines them all into one big csv? I figure this is better because
 then if one of them is time-consuming, you don't have to re-create that every
 time you re-create anything.
 
-Demographics/ is from pghsnap.com, or http://www.pittsburghpa.gov/dcp/snap/
-Demographic data from the census.
+demographics/ is from pghsnap.com, or http://www.pittsburghpa.gov/dcp/snap/
+Demographic data from the census. Also `demographics/blocks_housing` which is
+from America Fact Finder.
+
+TODO: should I be organizing all these data files into the same place?
