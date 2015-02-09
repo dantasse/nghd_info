@@ -49,12 +49,14 @@ def run_all():
     pprint.pprint(nghd_hr_counts)
     bin_writer = DictWriter(open(args.bins_outfile, 'w'),
         ['lat', 'lon', 'hour', 'count'])
+    bin_writer.writeheader()
     for bin_hr, count in bin_hr_counts.items():
         bin_writer.writerow({'lat': bin_hr[0], 'lon': bin_hr[1],
             'hour': bin_hr[2], 'count': count})
  
     nghd_writer = DictWriter(open(args.nghds_outfile, 'w'),
         ['nghd', 'hour', 'count'])
+    nghd_writer.writeheader()
     for nghd_hr, count in nghd_hr_counts.items():
         nghd_writer.writerow({'nghd': nghd_hr[0], 'hour': nghd_hr[1], 'count': count})
  
