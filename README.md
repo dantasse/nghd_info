@@ -9,3 +9,6 @@ We'll create a bunch of CSV files in output/. Then maybe there will be some
 method that combines them all into one big csv? I figure this is better because
 then if one of them is time-consuming, you don't have to re-create that every
 time you re-create anything.
+
+Demographics/ is from pghsnap.com, or http://www.pittsburghpa.gov/dcp/snap/
+Demographic data from the census.
