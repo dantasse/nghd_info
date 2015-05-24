@@ -15,3 +15,17 @@ Demographic data from the census. Also `demographics/blocks_housing` which is
 from America Fact Finder.
 
 TODO: should I be organizing all these data files into the same place?
+
+# Scripts
+yelp_search.py: steals data from Yelp and generates outputs/bins_pgh_venue_categories.json.
+
+get_venues_users.py: looks up bins_pgh_venue_categories.json and bins_num_tweets.csv to generate bins_uniq_user_venue.json
+
+
+# Outputs
+bins_num_tweets.csv: Stores the number of tweets and unique number of tweeters in each bin.
+
+bins_pgh_venue_categories.json: Stores an array of dictionaries which has bins and categories.
+
+bins_uniq_user_venue.json: Stores a dictionary that maps each bin to venue frequencies 
+  and the number of unique users in that bin.
